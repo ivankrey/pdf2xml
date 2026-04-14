@@ -223,49 +223,51 @@ function parseInvoice(pages) {
     inv.currency_code = m[2].trim();
   }
 
-  // позиции — ищем строку между шапкой таблицы («А 1 1a …») и «Всего к оплате»
-  const tableBlock = p1.match(/А\s+1\s+1а?\s+1б[\s\S]+?Всего к оплате/i);
+  // позиции — берём блок между шапкой таблицы и «Всего к оплате».
+  // В заголовке буквы могут быть как латинские, так и кириллические (1a/1а, 1б/1b).
+  const tableBlock = p1.match(/А\s+1\s+1[aа]?\s+1[бb][\s\S]+?Всего к оплате/i);
   if (tableBlock) {
-    const lines = tableBlock[0].split('\n');
-    let n = 1;
-    for (const line of lines) {
-      // строка позиции: обычно начинается «— N Наименование …» или «N Наименование»
-      const mi = line.match(/^(?:[—–\-]\s+)?(\d+)\s+(.+?)\s+([—–\-]|\d+)\s+(\d{3})\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+(?:\s+\S+)?)\s+(без НДС|\d+%?|без\s+НДС)/);
+    const lines = tableBlock[0].split('\n').slice(1); // без строки-заголовка
+    let n = 0;
+    let cur = null;
+    // regex строки позиции: "[— ]N Наименование1 КодВида(—|число) КодОКЕИ(3цифры) Ед Кол Цена Сумма Акциз Ставка Налог Сумма"
+    const reItem = /^(?:[—–\-]\s+)?(\d+)\s+(.+?)\s+(?:[—–\-]|\d+)\s+(\d{3})\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+(?:\s+\S+)?)\s+(без НДС|\d+(?:[.,]\d+)?%?)/i;
+    const reTotal = /Всего к оплате/i;
+
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (!line) continue;
+      if (reTotal.test(line)) break;
+
+      const mi = line.match(reItem);
       if (mi) {
-        inv.items.push({
-          num: +mi[1] || n++,
-          name: mi[2].trim(),
-          unit_code: mi[4],
-          unit_name: mi[5],
-          qty: cleanAmount(mi[6]),
-          price: cleanAmount(mi[7]),
-          sum_without_tax: cleanAmount(mi[8]),
-          excise: 'без акциза',
+        if (cur) inv.items.push(cur);
+        n++;
+        cur = {
+          num: +mi[1] || n,
+          name_parts: [mi[2].trim()],
+          unit_code: mi[3],
+          unit_name: mi[4],
+          qty: cleanAmount(mi[5]),
+          price: cleanAmount(mi[6]),
+          sum_without_tax: cleanAmount(mi[7]),
+          excise: mi[8],
           tax_rate: 'без НДС',
           tax_sum: 'без НДС',
-          sum_with_tax: cleanAmount(mi[8]),
-        });
+          sum_with_tax: cleanAmount(mi[7]),
+        };
+      } else if (cur) {
+        // продолжение наименования: убираем хвост из "— — —" и прочий мусор
+        const cleaned = line.replace(/\s+[—–\-]+(?:\s+[—–\-]+)*\s*$/, '').trim();
+        if (cleaned) cur.name_parts.push(cleaned);
       }
     }
-  }
+    if (cur) inv.items.push(cur);
 
-  // fallback для единственной позиции — если таблицу не удалось распарсить
-  if (inv.items.length === 0) {
-    m = p1.match(/^([—–\-]\s+)?(\d+)\s+([\s\S]+?)\s+(\d{3})\s+([А-яa-z]{1,8})\s+(\d+(?:[.,]\d+)?)\s+(\d+(?:[.,]\d+)?)\s+(\d+(?:[.,]\d+)?)\s+(Без акциза|без акциза)\s+(без НДС)/m);
-    if (m) {
-      inv.items.push({
-        num: +m[2] || 1,
-        name: m[3].replace(/\s+/g, ' ').trim(),
-        unit_code: m[4],
-        unit_name: m[5],
-        qty: cleanAmount(m[6]),
-        price: cleanAmount(m[7]),
-        sum_without_tax: cleanAmount(m[8]),
-        excise: m[9],
-        tax_rate: 'без НДС',
-        tax_sum: 'без НДС',
-        sum_with_tax: cleanAmount(m[8]),
-      });
+    // склеиваем имя из частей
+    for (const it of inv.items) {
+      it.name = (it.name_parts || []).join(' ').replace(/\s+/g, ' ').trim();
+      delete it.name_parts;
     }
   }
 
