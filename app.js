@@ -488,15 +488,25 @@ function buildXml(inv, pdfName) {
     ? inv.items[0].name
     : 'Работы (услуги) выполнены (оказаны) в полном объёме';
 
-  const svPer = attrs({ СодОпер: soder, ДатаПер: fmtDateRu(inv.shipment_date_iso) });
+  const datePer = fmtDateRu(inv.shipment_date_iso || inv.doc_date_iso)
+    || `${pad(now.getDate())}.${pad(now.getMonth()+1)}.${now.getFullYear()}`;
+  const svPer = attrs({ СодОпер: soder, ДатаПер: datePer });
 
-  let osnPer = '';
+  let osnPer;
   if (inv.basis_number) {
     const basisDate = inv.basis_date_iso || inv.doc_date_iso;
     osnPer = `<ОснПер${attrs({
       РеквНаимДок: inv.basis_name || 'Счет',
       РеквНомерДок: inv.basis_number,
       РеквДатаДок: fmtDateRu(basisDate),
+    })}/>`;
+  } else {
+    const fallbackDate = fmtDateRu(inv.doc_date_iso)
+      || `${pad(now.getDate())}.${pad(now.getMonth()+1)}.${now.getFullYear()}`;
+    osnPer = `<ОснПер${attrs({
+      РеквНаимДок: 'Без документа-основания',
+      РеквНомерДок: 'б/н',
+      РеквДатаДок: fallbackDate,
     })}/>`;
   }
 

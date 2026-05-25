@@ -277,9 +277,11 @@ def build_xml(inv: Invoice, pdf_path: str = "") -> tuple[str, bytes]:
         soder = inv.items[0].name
     else:
         soder = "Работы (услуги) выполнены (оказаны) в полном объёме"
-    sv_per_attrs = {"СодОпер": soder}
-    if inv.shipment_date_iso:
-        sv_per_attrs["ДатаПер"] = _fmt_date_ru(inv.shipment_date_iso)
+    date_per = inv.shipment_date_iso or inv.doc_date_iso
+    sv_per_attrs = {
+        "СодОпер": soder,
+        "ДатаПер": _fmt_date_ru(date_per) or now.strftime("%d.%m.%Y"),
+    }
     sv_per = SubElement(sv_prod_per, "СвПер", sv_per_attrs)
 
     if inv.basis_number:
@@ -287,11 +289,16 @@ def build_xml(inv: Invoice, pdf_path: str = "") -> tuple[str, bytes]:
             "РеквНаимДок": inv.basis_name or "Счет",
             "РеквНомерДок": inv.basis_number,
         }
-        # если дата не распознана — используем дату основного документа
         basis_date = inv.basis_date_iso or inv.doc_date_iso
         if basis_date:
             osn_attrs["РеквДатаДок"] = _fmt_date_ru(basis_date)
         SubElement(sv_per, "ОснПер", osn_attrs)
+    else:
+        SubElement(sv_per, "ОснПер", {
+            "РеквНаимДок": "Без документа-основания",
+            "РеквНомерДок": "б/н",
+            "РеквДатаДок": _fmt_date_ru(inv.doc_date_iso) or now.strftime("%d.%m.%Y"),
+        })
 
     # --- Подписант ---
     last, first, middle = _split_fio(inv.signer_name)
