@@ -160,7 +160,7 @@ def _add_address(parent: Element, addr_text: str) -> None:
     adr = SubElement(parent, "Адрес")
     parts = _parse_address(addr_text)
     if parts.get("_fallback"):
-        SubElement(adr, "АдрИнф", {"КодСтр": "643", "АдрТекст": addr_text})
+        SubElement(adr, "АдрИнф", {"КодСтр": "643", "НаимСтран": "РОССИЯ", "АдрТекст": addr_text})
     else:
         # порядок атрибутов как у Диадока
         attrs = {}

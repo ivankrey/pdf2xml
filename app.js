@@ -410,7 +410,7 @@ function naimSubj(p) {
 function buildAddress(addr) {
   const parsed = parseAddress(addr);
   if (parsed._fallback) {
-    return `<Адрес><АдрИнф${attrs({КодСтр:'643', АдрТекст: parsed.text || addr})}/></Адрес>`;
+    return `<Адрес><АдрИнф${attrs({КодСтр:'643', НаимСтран:'РОССИЯ', АдрТекст: parsed.text || addr})}/></Адрес>`;
   }
   const order = ['КодРегион','НаимРегион','Индекс','Район','Улица','Дом','Кварт'];
   const o = {};
