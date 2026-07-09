@@ -28,13 +28,8 @@
 
     <!-- Шаг 2: редактирование полей -->
     <section id="form-section" class="hidden">
-      <div class="tabs">
-        <button class="tab-btn active" data-tab="header">Шапка документа</button>
-        <button class="tab-btn" data-tab="items">Позиции</button>
-        <button class="tab-btn" data-tab="signer">Подписант / передача</button>
-      </div>
-
-      <div id="tab-header" class="tab-content active">
+      <div id="tab-header" class="tab-content">
+        <h2 class="block-title">Шапка документа</h2>
         <h3>Документ</h3>
         <div class="grid">
           <label>№ документа <input type="text" data-field="doc_number"></label>
@@ -67,6 +62,7 @@
       </div>
 
       <div id="tab-items" class="tab-content">
+        <h2 class="block-title">Позиции</h2>
         <table id="items-table">
           <thead>
             <tr>
@@ -92,6 +88,7 @@
       </div>
 
       <div id="tab-signer" class="tab-content">
+        <h2 class="block-title">Подписант / передача</h2>
         <h3>Передача</h3>
         <div class="grid">
           <label class="wide">Основания передачи <input type="text" data-field="basis"></label>

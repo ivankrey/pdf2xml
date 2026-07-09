@@ -709,16 +709,6 @@ function wireUp() {
     else el('#file-status').textContent = 'Нужен PDF-файл';
   });
 
-  // вкладки
-  els('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      els('.tab-btn').forEach(b => b.classList.remove('active'));
-      els('.tab-content').forEach(c => c.classList.remove('active'));
-      btn.classList.add('active');
-      el('#tab-' + btn.dataset.tab).classList.add('active');
-    });
-  });
-
   el('#btn-save').addEventListener('click', onSave);
   el('#btn-new').addEventListener('click', () => {
     state.inv = null;

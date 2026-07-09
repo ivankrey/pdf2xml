@@ -94,30 +94,17 @@ footer a { color: var(--accent); }
   overflow: hidden;
 }
 
-.tabs {
-  display: flex;
-  border-bottom: 1px solid var(--border);
-  background: #fbfbfd;
-}
-.tab-btn {
-  flex: none;
-  padding: 12px 20px;
-  border: none;
-  background: transparent;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--muted);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-}
-.tab-btn.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-}
-.tab-btn:hover { background: #f2f4f7; }
+.tab-content { display: block; padding: 24px; }
+.tab-content + .tab-content { border-top: 1px solid var(--border); }
 
-.tab-content { display: none; padding: 24px; }
-.tab-content.active { display: block; }
+.block-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 18px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--accent);
+  color: var(--text);
+}
 
 .tab-content h3 {
   font-size: 14px;
